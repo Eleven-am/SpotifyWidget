@@ -109,7 +109,7 @@ export const Player = LiveFactory<LiveContext, ClientEvent, MonitorMessage>({
         return socket.assign({
             state: {
                 ...state,
-                color: '#1DB954'
+                color: '0,0,0'
             },
             channel: userId
         });
