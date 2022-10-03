@@ -22,8 +22,6 @@ type LiveContext = {
     channel: string,
 }
 
-//cl7ggdi950000jhq2muf03xp1
-
 interface ITrackInfoProps {
     track: SpotifyTrack | null | undefined
     device: SpotifyDevice | null | undefined
