@@ -2,6 +2,7 @@ import {Spotify, SpotifyPlayerState, SpotifyState} from "./spotify";
 import {BaseClass} from "./base";
 import {PondLiveChannel} from "pondsocket";
 import {UserClass} from "./user";
+import { getAverageColor } from 'fast-average-color-node';
 
 export interface MonitorMessage extends Required<SpotifyPlayerState> {
     color: string;
@@ -88,12 +89,10 @@ export class Monitor extends BaseClass {
         let color = this._color;
         if (!this.isStateInSync(track)) {
             if (track.track) {
-                const data = await this.makeRequest<{ color: string }>('https://blur.maix.ovh/api', {
-                    image: track.track?.album?.images[0].url,
-                    type: 'averageColor'
-                }, 'POST');
+                const data = await getAverageColor(track.track.album?.images[0].url || '');
+                data.value.pop();
 
-                color = data?.color.replace(/^rgba\(|\s+\.5\)$/g, '') || '0,0,0';
+                color = `${data.value.join(',')},`;
             } else
                 color = '0,0,0';
 
