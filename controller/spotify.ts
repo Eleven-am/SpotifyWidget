@@ -223,12 +223,13 @@ export class Spotify extends BaseClass {
 
     public generateAuthorizeUrl(state: string): string {
         const credentials = Spotify.spotifyCredentials;
-        const scopes = ['user-read-private', 'user-read-email',
-            'user-read-playback-state', 'user-modify-playback-state',
-            'user-read-currently-playing', 'playlist-read-private',
-            'playlist-modify-public', 'playlist-modify-private',
-            'playlist-read-collaborative', 'user-read-recently-played', 'user-top-read',
-            'streaming'].join(',');
+        const scopes = [
+            'user-read-email',
+            'user-read-playback-state',
+            'user-modify-playback-state',
+            'user-read-currently-playing',
+            'streaming'
+        ].join(',');
 
         const stringifyParams = (params: any) => {
             return Object.keys(params).map(key => key + '=' + encodeURIComponent(params[key])).join('&');

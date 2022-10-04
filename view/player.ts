@@ -124,7 +124,7 @@ export const Player = LiveFactory<LiveContext, ClientEvent, MonitorMessage>({
         if (!channel.data.monitor){
             const monitor = new Monitor(token, channel, userClass);
             monitor.monitorClient();
-            channel.assign({monitor, users: 0});
+            channel.assign({monitor, users: 1});
             channel.onComplete(data => {
                 const monitor = data.monitor as Monitor;
                 if (monitor)
