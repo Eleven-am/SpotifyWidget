@@ -94,7 +94,7 @@ export class Monitor extends BaseClass {
 
                 color = `${data.value.join(',')},`;
             } else
-                color = '0,0,0';
+                color = '0,0,0,';
 
             this._color = color;
             this._lastMessage = {
