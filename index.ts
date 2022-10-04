@@ -39,6 +39,10 @@ server.get('/spotify/callback', async (req, res) => {
     }
 });
 
+server.get(/(.*?)/, (_, res) => {
+    res.redirect('/login');
+});
+
 server.listen(3000, () => {
     console.log('Listening on port 3000');
 })

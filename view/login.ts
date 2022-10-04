@@ -75,7 +75,7 @@ export const Login = LiveFactory<LoginState, any, any>({
     },
 
     onInfo(info: { user: string }, _socket, _context, router) {
-        router.push('/widget/' + info.user);
+        router.redirect('/widget/' + info.user);
     },
 
     onEvent(event, _context, socket, _router) {
