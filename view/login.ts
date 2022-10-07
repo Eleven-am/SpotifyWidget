@@ -8,8 +8,7 @@ interface LoginState {
     loading: boolean,
 }
 
-
-export const Login = LiveFactory<LoginState, any, any>({
+export const Login = LiveFactory<LoginState>({
     routes: [],
 
     mount(_ctx, socket, router) {
@@ -75,7 +74,7 @@ export const Login = LiveFactory<LoginState, any, any>({
     },
 
     onInfo(info: { user: string }, _socket, _context, router) {
-        router.redirect('/widget/' + info.user);
+        router.navigateTo('/widget/' + info.user);
     },
 
     onEvent(event, _context, socket, _router) {

@@ -23,7 +23,10 @@ const manager = server.usePondLive([
         path: '/login',
         Component: Login
     }
-], staticPath);
+], {
+    index: staticPath,
+    secret: 'd72a9ea2-3125-4173-90c6-d58d56689260'
+});
 
 server.get('/spotify/callback', async (req, res) => {
     const {code, state} = req.query;
