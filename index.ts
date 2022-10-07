@@ -46,6 +46,8 @@ server.get(/(.*?)/, (_, res) => {
     res.redirect('/login');
 });
 
-server.listen(3000, () => {
+const port: number = Number(process.env.PORT || 3000);
+
+server.listen(port, () => {
     console.log('Listening on port 3000');
 })
