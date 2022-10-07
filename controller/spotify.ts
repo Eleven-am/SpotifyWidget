@@ -8,6 +8,7 @@ import {PondLiveChannel} from "pondsocket";
 interface SpotifyCredentials {
     clientId: string;
     clientSecret: string;
+    appUrl: string;
 }
 
 interface SpotifyArtist {
@@ -88,10 +89,11 @@ export class Spotify extends BaseClass {
     public static get spotifyCredentials(): SpotifyCredentials {
         const credentials = {
             clientId: process.env.SPOTIFY_CLIENT_ID || '',
-            clientSecret: process.env.SPOTIFY_CLIENT_SECRET || ''
+            clientSecret: process.env.SPOTIFY_CLIENT_SECRET || '',
+            appUrl: process.env.APP_URL || ''
         }
 
-        if (credentials.clientId === '' || credentials.clientSecret === '')
+        if (credentials.clientId === '' || credentials.clientSecret === '' || credentials.appUrl === '')
             throw new Error('No Spotify credentials found');
 
         return credentials;
@@ -238,7 +240,7 @@ export class Spotify extends BaseClass {
         const params = {
             client_id: credentials.clientId,
             response_type: 'code',
-            redirect_uri: 'http://localhost:3000/spotify/callback',
+            redirect_uri: `${credentials.appUrl}/spotify/callback`,
             scope: scopes, state: state,
             auth_type: 'rerequest',
             display: 'popup',
