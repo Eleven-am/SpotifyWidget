@@ -258,7 +258,7 @@ export class Spotify extends BaseClass {
                 'Authorization': 'Basic ' + Buffer.from(credentials.clientId + ':' + credentials.clientSecret)
                     .toString('base64'),
             },
-            body: 'grant_type=authorization_code&code=' + code + '&redirect_uri=http://localhost:3000/spotify/callback',
+            body: `grant_type=authorization_code&code=${code}&redirect_uri=${credentials.appUrl}/spotify/callback`,
         });
 
         const json = await response.json();
