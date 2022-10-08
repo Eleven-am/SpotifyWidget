@@ -246,6 +246,8 @@ export class Spotify extends BaseClass {
             display: 'popup',
         };
 
+        console.log(params)
+
         return 'https://accounts.spotify.com/authorize?' + stringifyParams(params);
     }
 
