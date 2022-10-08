@@ -223,7 +223,7 @@ export class Spotify extends BaseClass {
         });
     }
 
-    public generateAuthorizeUrl(state: string): string {
+    public getAuthUrl(state: string): string {
         const credentials = Spotify.spotifyCredentials;
         const scopes = [
             'user-read-email',

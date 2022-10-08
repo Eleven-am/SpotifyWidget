@@ -1,10 +1,7 @@
 import {LiveFactory, html} from "pondsocket";
-import {Spotify} from "../controller/spotify";
-import {userClass} from "../controller/prisma";
 
 interface LoginState {
     state: string,
-    oauthUri: string,
     loading: boolean,
 }
 
@@ -13,8 +10,7 @@ export const Login = LiveFactory<LoginState>({
 
     mount(_ctx, socket, router) {
         const random = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        const oauthUri = new Spotify('', userClass).generateAuthorizeUrl(random);
-        socket.assign({state: random, loading: false, oauthUri});
+        socket.assign({state: random, loading: false});
         router.pageTitle = 'Login to Spotify';
     },
 
@@ -83,7 +79,7 @@ export const Login = LiveFactory<LoginState>({
     },
 
     render(context, ss) {
-        const address = context.context.oauthUri
+        const address = `/spotify/${context.context.state}`;
         const title = 'Login with Spotify';
 
         if (context.context.loading)

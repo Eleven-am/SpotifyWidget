@@ -42,6 +42,13 @@ server.get('/spotify/callback', async (req, res) => {
     }
 });
 
+server.get('/spotify/:state',(req, res) => {
+    const spotify = new Spotify('', userClass);
+    const url = spotify.getAuthUrl(req.params.state);
+    res.redirect(url);
+});
+
+
 server.get(/(.*?)/, (_, res) => {
     res.redirect('/login');
 });
