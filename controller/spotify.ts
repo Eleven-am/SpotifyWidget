@@ -246,8 +246,6 @@ export class Spotify extends BaseClass {
             display: 'popup',
         };
 
-        console.log(params)
-
         return 'https://accounts.spotify.com/authorize?' + stringifyParams(params);
     }
 
@@ -269,6 +267,8 @@ export class Spotify extends BaseClass {
             refreshToken: json.refresh_token,
             expiresInSeconds: json.expires_in,
         };
+
+        console.log(token);
 
         return await this.userClass.createUser(token.accessToken, token.refreshToken, token.expiresInSeconds);
     }
