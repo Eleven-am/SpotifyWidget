@@ -1,4 +1,5 @@
-import {LiveFactory, html} from "pondsocket";
+import {LiveFactory, html} from "@eleven-am/pondlive";
+import {userBroadcastChannel} from "./channels";
 
 interface LoginState {
     state: string,
@@ -14,11 +15,11 @@ export const Login = LiveFactory<LoginState>({
         router.pageTitle = 'Login to Spotify';
     },
 
-    onRendered(context, socket) {
-        socket.subscribe(context.state, 'spotifyCallback');
+    onRendered(socket) {
+        userBroadcastChannel.subscribe(socket);
     },
 
-    manageStyles(_context, css) {
+    manageStyles(css) {
         return css`
           .holder {
             height: 100%;
@@ -69,20 +70,23 @@ export const Login = LiveFactory<LoginState>({
         `;
     },
 
-    onInfo(info: { user: string }, _socket, _context, router) {
-        router.navigateTo('/widget/' + info.user);
+    onInfo(info, _socket, router) {
+        userBroadcastChannel.handleInfo(info, payload => {
+            if (payload.state === this.state && payload.user)
+                router.navigateTo('/widget/' + payload.user);
+        })
     },
 
-    onEvent(event, _context, socket, _router) {
+    onEvent(event, socket, _router) {
         if (event.type === 'login')
             socket.assign({loading: true});
     },
 
-    render(context, ss) {
-        const address = `/spotify/${context.context.state}`;
+    render(_renderRoutes, ss) {
+        const address = `/spotify/${this.state}`;
         const title = 'Login with Spotify';
 
-        if (context.context.loading)
+        if (this.loading)
             return html`<div>loading</div>`;
 
         return html` 

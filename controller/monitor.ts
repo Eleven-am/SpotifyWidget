@@ -1,33 +1,39 @@
 import {Spotify, SpotifyPlayerState, SpotifyState} from "./spotify";
-import {BaseClass} from "./base";
-import {PondLiveChannel} from "pondsocket";
 import {UserClass} from "./user";
 import { getAverageColor } from 'fast-average-color-node';
+import {BroadcastChannel, LiveEvent} from "@eleven-am/pondlive";
 
 export interface MonitorMessage extends Required<SpotifyPlayerState> {
     color: string;
 }
 
-export type ClientEvent =
-    |   {type: 'pause_resume_playback'}
-    |   {type: 'restart_play_previous_track'}
-    |   {type: 'play_next_track'}
-    |   {type: 'seek_to', position: number}
+export interface MonitorChannel {
+    event?: string;
+    userId?: string;
+    error?: string;
+    message?: MonitorMessage;
+}
 
-export class Monitor extends BaseClass {
+export type ClientEvent =  'seek_to'
+    |   'pause_resume_playback'
+    |   'restart_play_previous_track'
+    |   'play_next_track'
+
+export class Monitor {
     public monitorState: SpotifyState = 'OFFLINE';
-    private readonly _channel: PondLiveChannel;
+    private readonly _channel: BroadcastChannel<MonitorChannel>;
     private interval: NodeJS.Timeout | undefined;
     private _lastMessage: MonitorMessage | null;
     private _color: string = '';
     private readonly _spotify: Spotify;
     private _progressMs: number = 0;
+    private readonly _topic;
 
-    constructor(topic: string, channel: PondLiveChannel, user: UserClass) {
-        super();
+    constructor(topic: string, channel: BroadcastChannel<MonitorChannel>, user: UserClass) {
         this._channel = channel;
         this._spotify = new Spotify(topic, user, channel);
         this._lastMessage = null;
+        this._topic = topic;
         return this;
     }
 
@@ -46,7 +52,7 @@ export class Monitor extends BaseClass {
         this.monitorState = 'OFFLINE';
     }
 
-    public async handleMessages(message: ClientEvent) {
+    public async handleMessages(message: LiveEvent<ClientEvent>) {
         switch (message.type) {
             case 'pause_resume_playback':
                 if (this._lastMessage?.details.playerState === 'PLAYING')
@@ -65,7 +71,7 @@ export class Monitor extends BaseClass {
                 await this._spotify.playNext();
                 break;
             case 'seek_to':
-                await this._spotify.seek(message.position || 0);
+                await this._spotify.seek(+(message.value || 0));
                 break;
             default:
                 console.log('Unknown message', message);
@@ -124,7 +130,7 @@ export class Monitor extends BaseClass {
     }
 
     private sendMessage(event: string, message: MonitorMessage) {
-        this._channel.broadcast(event, message);
+        this._channel.broadcast({event, message, userId: this._topic});
         this._progressMs = message.details.progressMs || 0;
     }
 }

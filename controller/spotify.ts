@@ -1,9 +1,9 @@
 import fetch from 'cross-fetch';
 import SpotifyApi from 'spotify-web-api-node';
 import {UserClass} from "./user";
-import {BaseClass} from "./base";
 import {User} from '@prisma/client';
-import {PondLiveChannel} from "pondsocket";
+import {BroadcastChannel} from "@eleven-am/pondlive";
+import {MonitorChannel} from "./monitor";
 
 interface SpotifyCredentials {
     clientId: string;
@@ -69,19 +69,18 @@ export interface SpotifyPlayerState {
     }
 }
 
-export class Spotify extends BaseClass {
-    private readonly spotifyKey: string;
-    private token: User | undefined;
-    private readonly api: SpotifyApi;
-    private readonly userClass: UserClass;
-    private readonly channel: PondLiveChannel | undefined;
+export class Spotify {
+    private _token: User | undefined;
+    private readonly _api: SpotifyApi;
+    private readonly _spotifyKey: string;
+    private readonly _userClass: UserClass;
+    private readonly _channel: BroadcastChannel<MonitorChannel> | undefined;
 
-    constructor(spotifyKey: string, user: UserClass, channel?: PondLiveChannel) {
-        super();
-        this.spotifyKey = spotifyKey;
-        this.userClass = user;
-        this.channel = channel;
-        this.api = new SpotifyApi({
+    constructor(spotifyKey: string, user: UserClass, channel?: BroadcastChannel<MonitorChannel>) {
+        this._spotifyKey = spotifyKey;
+        this._userClass = user;
+        this._channel = channel;
+        this._api = new SpotifyApi({
             ...Spotify.spotifyCredentials,
         });
     }
@@ -107,9 +106,9 @@ export class Spotify extends BaseClass {
     }
 
     public async getToken(): Promise<User> {
-        let token = this.token;
+        let token = this._token;
         if (token === undefined) {
-            const tempToken = await this.userClass.getUser(this.spotifyKey);
+            const tempToken = await this._userClass.getUser(this._spotifyKey);
             if (!tempToken)
                 throw new Error('Invalid token');
 
@@ -132,16 +131,16 @@ export class Spotify extends BaseClass {
             const json = await response.json();
             token.validUntil = new Date(Date.now() + (json.expires_in * 1000));
             token.accessToken = json.access_token;
-            await this.userClass.updateUser(token);
+            await this._userClass.updateUser(token);
         }
 
-        this.token = token;
-        return this.token;
+        this._token = token;
+        return this._token;
     }
 
     public async getPlayerState(): Promise<SpotifyPlayerState | null> {
         return this.executeFunction(async () => {
-            const response = await this.api.getMyCurrentPlaybackState();
+            const response = await this._api.getMyCurrentPlaybackState();
             const playerState = response.body.item ? response.body.is_playing ? 'PLAYING' : 'PAUSED' : 'STOPPED';
 
             const state: SpotifyPlayerState = {
@@ -190,35 +189,35 @@ export class Spotify extends BaseClass {
 
     public async seek(positionMs: number): Promise<void> {
         return this.executeFunction(async () => {
-            await this.api.seek(positionMs);
+            await this._api.seek(positionMs);
         }).then(() => {
         });
     }
 
     public async pause(): Promise<void> {
         return this.executeFunction(async () => {
-            await this.api.pause();
+            await this._api.pause();
         }).then(() => {
         });
     }
 
     public async resume(): Promise<void> {
         return this.executeFunction(async () => {
-            await this.api.play();
+            await this._api.play();
         }).then(() => {
         });
     }
 
     public async playPrevious(): Promise<void> {
         return this.executeFunction(async () => {
-            await this.api.skipToPrevious();
+            await this._api.skipToPrevious();
         }).then(() => {
         });
     }
 
     public async playNext(): Promise<void> {
         return this.executeFunction(async () => {
-            await this.api.skipToNext();
+            await this._api.skipToNext();
         }).then(() => {
         });
     }
@@ -268,9 +267,7 @@ export class Spotify extends BaseClass {
             expiresInSeconds: json.expires_in,
         };
 
-        console.log(token);
-
-        return await this.userClass.createUser(token.accessToken, token.refreshToken, token.expiresInSeconds);
+        return await this._userClass.createUser(token.accessToken, token.refreshToken, token.expiresInSeconds);
     }
 
     protected async getTrack(trackId: string): Promise<SpotifyTrack | null> {
@@ -278,7 +275,7 @@ export class Spotify extends BaseClass {
             if (trackId === '')
                 return null;
 
-            const response = await this.api.getTrack(trackId);
+            const response = await this._api.getTrack(trackId);
             const track: SpotifyTrack = {
                 id: response.body.id,
                 name: response.body.name,
@@ -305,7 +302,7 @@ export class Spotify extends BaseClass {
 
     protected async getDevice(deviceId: string): Promise<SpotifyDevice | null> {
         return this.executeFunction(async () => {
-            const devices = await this.api.getMyDevices();
+            const devices = await this._api.getMyDevices();
             const device = devices.body.devices.find(d => d.id === deviceId);
             if (device === undefined)
                 return null;
@@ -325,12 +322,12 @@ export class Spotify extends BaseClass {
 
     private async executeFunction<S>(callback: () => Promise<S>): Promise<S | null> {
         const token = await this.getToken();
-        this.api.setAccessToken(token.accessToken);
+        this._api.setAccessToken(token.accessToken);
         try {
             return await callback();
         } catch (e: any) {
             console.error(e);
-            this.channel?.broadcast('error', {
+            this._channel?.broadcast({
                 error: e.message
             })
             return null;

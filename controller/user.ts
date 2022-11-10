@@ -1,13 +1,11 @@
 import SpotifyApi from "spotify-web-api-node";
 import {Spotify} from "./spotify";
-import {BaseClass} from "./base";
 import {User, PrismaClient} from '@prisma/client';
 
-export class UserClass extends BaseClass {
+export class UserClass {
     private readonly prisma: PrismaClient;
 
     constructor(prisma: PrismaClient) {
-        super();
         this.prisma = prisma;
     }
 
