@@ -23,7 +23,7 @@ server.usePondLive([
         Component: Login
     }
 ], {
-    staticPath: path.join(__dirname, './public'),
+    staticPath: path.join(__dirname, '../public'),
     secret: 'd72a9ea2-3125-4173-90c6-d58d56689260'
 });
 
